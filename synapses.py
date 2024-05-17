@@ -160,20 +160,6 @@ class synapses_process():
 
         return fleps
 
-    #def onboard_model(self, spid, noep, user_id, username, mj, spc_path,
-    #                  spl_path, ds_name, ds_url, nb_url):
-    #    res = ModelOnboardingOps.run(sp = self,
-    #                                 spid = spid,
-    #                                 no_ep = noep,
-    #                                 user_id = user_id,
-    #                                 username = username,
-    #                                 model_json = mj,
-    #                                 synproc_local_path = spl_path,
-    #                                 synproc_cloud_path = spc_path,
-    #                                 dataset_name = ds_name,
-    #                                 dataset_url = ds_url,
-    #                                 notebook_url = nb_url
-    #                                )
     def onboard_model(self, **kwargs):
         kwargs["sp"] = self
         res = ModelOnboardingOps.run(**kwargs)

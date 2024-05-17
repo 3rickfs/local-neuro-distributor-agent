@@ -8,7 +8,6 @@ from flask import Flask, request
 
 from orchestration_planner import (#read_endpoints,
                                    OrchPlannerOps,
-                                   save_files,
                                    read_json_data
                                   )
 from synapses import synapses_process
@@ -186,7 +185,6 @@ def send_inputs_to_1layer_nods():
 
     return json.dumps(result)
 
-@app.route("/set_final_output", methods=['POST'])
 def set_final_output():
     global syn_proc 
 
@@ -223,7 +221,6 @@ def set_final_output():
 
     return result #"ok"
 
-@app.route("/read_synapses_process_output", methods=['POST'])
 def read_synapses_process_output():
     global syn_proc
 
@@ -250,13 +247,13 @@ def read_synapses_process_output():
 
     return res
 
-def crear_proceso_sinaptico():
+def crear_proceso_sinaptico(synaptic_data, nods_info):
     global syn_proc
 
-    file_path = app.config['UPLOAD_FOLDER']
-    js_n, ni_n = save_files(request, file_path)
-    json_data = read_json_data(file_path, js_n)
-    nods_info = read_json_data(file_path, ni_n)
+    #file_path = app.config['UPLOAD_FOLDER']
+    #js_n, ni_n = save_files(request, file_path)
+    #json_data = read_json_data(file_path, js_n)
+    #nods_info = read_json_data(file_path, ni_n)
 
     #input_data = request.get_json()
     syn_proc = synapses_process(nods_info)
@@ -264,20 +261,20 @@ def crear_proceso_sinaptico():
     synapses_process_id = id(syn_proc)
 
     # NOA endpoint for getting model output
-    neuro_orchestrator_ep = [json_data["neuro_orchestrator_url"] + "/set_final_output"]
+    neuro_orchestrator_ep = [synaptic_data["neuro_orchestrator_url"] + "/set_final_output"]
 
     #Onboard the model
     data_4_onboarding = {}
     data_4_onboarding["spcode"] = synapses_process_id
     data_4_onboarding["noep"] = neuro_orchestrator_ep
-    data_4_onboarding["upload_folder_path"] = file_path
-    data_4_onboarding["user_id"] = json_data["user_id"]
-    data_4_onboarding["username"] = json_data["username"]
-    data_4_onboarding["mj"] = json_data #here comes the model.json too
+    #data_4_onboarding["upload_folder_path"] = file_path
+    data_4_onboarding["user_id"] = synaptic_data["user_id"]
+    data_4_onboarding["username"] = synaptic_data["username"]
+    data_4_onboarding["mj"] = synaptic_data #here comes the model.json too
     data_4_onboarding["sc_fpath"] = "synaptic_process_objs"
-    data_4_onboarding["dataset_name"] = json_data["dataset_name"]
-    data_4_onboarding["dataset_url"] = json_data["dataset_url"]
-    data_4_onboarding["notebook_url"] = json_data["notebook_url"]
+    data_4_onboarding["dataset_name"] = synaptic_data["dataset_name"]
+    data_4_onboarding["dataset_url"] = synaptic_data["dataset_url"]
+    data_4_onboarding["notebook_url"] = synaptic_data["notebook_url"]
     #data for the model
     data_4_onboarding["mfpc"] = "models"
     data_4_onboarding["model_bucket_name"] = "greenbrain"
@@ -288,7 +285,7 @@ def crear_proceso_sinaptico():
         print(f"Error when creating synaptic process: {e}")
         res = {"res":f"error - {e}"}
 
-    return json.dumps(res) #str(res))
+    return res
 
 def delete_proceso_sinaptico():
     json_data = request.get_json()
