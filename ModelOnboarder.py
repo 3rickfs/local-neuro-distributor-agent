@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 from abc import ABC, abstractmethod
 from datetime import datetime
 
@@ -11,7 +12,6 @@ from orchestration_planner import (#read_endpoints,
 from neuron_distributor import (start_distribution,
                                 start_first_layer_input_distribution
                                )
-from noaDBmanager import noaDBmanager
 
 class model_onboarding_ops(ABC):
     """ Operations to perform to onboard a AI model
@@ -22,35 +22,69 @@ class model_onboarding_ops(ABC):
         #interface to child classes
         pass
 
-class verify_user_availability(model_onboarding_ops):
-    """ see if the user exists or is available to onboard models
+class create_synaptic_process(model_onboarding_ops):
+    """ Create synaptic process calling the corresponding NOA to do that
     """
 
     def run_operation(**kwargs):
-        print("Veriying user availability")
-        if noaDBmanager.verify_user_compliance(
-            kwargs["user_id"],
-            kwargs["username"]
-        ):
-            #if yes then it exists
-            print("User exists and meets the compliance")
+        print("Creating synaptic process")
+        mj = {"model_info":{
+            "nombre": kwargs["mj"]["model_info"]["nombre"],
+            "model_version": kwargs["mj"]["model_info"]["model_version"],
+            "neurons_num": kwargs["mj"]["model_info"]["neurons_num"],
+            "layers_num": kwargs["mj"]["model_info"]["layers_num"],
+            "params_num": kwargs["mj"]["model_info"]["params_num"]
+            }
+        }
+        json_data = {
+            "user_id": kwargs["user_id"],
+            "username": kwargs["username"],
+            "neuro_orchestrator_url": kwargs["neuro_orchestrator_url"],
+            "dataset_name": kwargs["dataset_name"],
+            "dataset_url": kwargs["dataset_url"],
+            "notebook_url": kwargs["notebook_url"],
+            "mj": mj
+        }
+
+        with open("json_data.json", "w") as jf:
+            json.dump(json_data, jf)
+        jf.close()
+        with open("nods_info.json", "w") as jf:
+            json.dump(kwargs["nods_info"], jf)
+        jf.close()
+        #with open("json_data.json", "rb") as jf:
+        #    json_data = jf
+        #jf.close()
+        #with open("nods_info.json", "rb") as jf:
+        #    nods_info= jf
+        #jf.close()
+        json_data = open("json_data.json", "rb")
+        nods_info = open("nods_info.json", "rb")
+
+        files = {
+            'nods_info': nods_info,
+            'json_data': json_data
+        }
+
+        noa_url = kwargs["neuro_orchestrator_url"]
+        url = noa_url + "/crear_no_distribution_synaptic_process"
+        result = requests.post(url, files=files)
+
+        res = json.loads(result.text)
+        print(res)
+
+        json_data.close()
+        nods_info.close()
+
+        if res["res"] == "successful":
+            spid = res["proc_sinap_id"]
+            kwargs["proc_sinap_id"] = spid
+            print(f"Correctly created synaptic process: {spid}")
         else:
-            raise Exception("User does not exist or not"
-                            "meet the compliance"
-                           )
+            raise Exception(f"Issues with user: {kwargs['username']} for" + \
+                            "creating the synaptic process")
 
         return kwargs
-
-class get_model_json_ready(model_onboarding_ops):
-    """ Get the model in json ready for being distributed
-    """ 
-
-    def run_operation(**kwargs):
-        print("Getting the model json ready")
-        #print(kwargs["mj"])
-
-        return kwargs
-
 
 class update_syn_proc_info(model_onboarding_ops):
     """ update info in corresponing syn_proc obj
@@ -81,21 +115,18 @@ class update_sp_and_model_paths(model_onboarding_ops):
                 str(kwargs["spcode"]) + \
                 "-spobj.json"
         kwargs["sp"].obj_cloud_path = kwargs["sc_fpath"] + "/" + objfn
-        kwargs["sp"].obj_local_path = kwargs["upload_folder_path"] + \
-                                      "/sps/" + \
-                                      objfn
+        # following path should be set up in the corresponding NOA
+        kwargs["sp"].obj_local_path = ""
         mfname =  kwargs["sp"].model_details["model_info"]["nombre"]
         mfname = mfname.replace(" ", "_") # replacing blank spaces by _
         mfname += "-" + str(kwargs["spcode"]) + "-aimodel.json"
         kwargs["mfname"] = mfname
         kwargs["sp"].aimodel_file_name = mfname
 
-        kwargs["sp"].aimodel_cloud_path = kwargs["mfpc"] + "/" + mfname
-        kwargs["sp"].aimodel_local_path = kwargs["upload_folder_path"] + \
-                                          "/models/" + mfname
+        kwargs["sp"].aimodel_cloud_path = ""
+        kwargs["sp"].aimodel_local_path = ""
 
         return kwargs
-
 
 class plan_orchestration(model_onboarding_ops):
     """ Run the orchestration planner to know how to distribute neurons
@@ -143,73 +174,6 @@ class save_nod_dis_urls(model_onboarding_ops):
         return kwargs
 
 
-class save_distribution_info_to_db(model_onboarding_ops):
-    """ Being ok previous steps it's time to save in db what was done
-    """
-
-    def run_operation(**kwargs):
-        print("Saving distribution info to db")
-        # Adding an ai model to db
-        aimodel_data = {}
-        aimodel_data["owner_id"] = kwargs["user_id"]
-        aimodel_data["model_path_cloud"] = kwargs["sp"].aimodel_cloud_path
-        aimodel_data["model_bucket_name"] = kwargs["model_bucket_name"]
-        aimodel_data["model_path_local"] = kwargs["sp"].aimodel_local_path
-        aimodel_data["creation_datetime"] = datetime.now()
-        aimodel_data["lastmodification_datetime"] = datetime.now()
-        aimodel_data["model_name"] = kwargs["sp"].\
-                                     model_details["model_info"]["nombre"]
-        aimodel_data["model_file_name"] = kwargs["mfname"]
-        aimodel_data["model_version"] = kwargs["sp"].\
-                                        model_details["model_info"]\
-                                        ["model_version"]
-        aimodel_data["neurons_number"] = kwargs["sp"].\
-                                         model_details["model_info"]\
-                                         ["neurons_num"]
-        aimodel_data["layers_number"] = kwargs["sp"].\
-                                        model_details["model_info"]\
-                                        ["layers_num"]
-        aimodel_data["parameters_number"] = kwargs["sp"].\
-                                            model_details["model_info"]\
-                                            ["params_num"]
-
-        aimodel_id = noaDBmanager.insert_aimodel_data(aimodel_data)
-        kwargs["aimodel_id"] = aimodel_id
-        print(f"New ai model id: {aimodel_id}")
-
-        #if res["res"] != "ok"
-        #    raise Exception("Issues to insert new row in aimodel table")
-
-        # Get the last created model
-        #aimodelid = res["aimodel_id"] #noaDBmanager.get_last_aimodel_id()
-        # Create synapses process
-        sp_data = {}
-        sp_data["user_id"] = kwargs["user_id"]
-        sp_data["aimodel_id"] = aimodel_id
-        sp_data["proc_sinap_code"] = kwargs["spcode"]
-        sp_data["creation_datetime"] = datetime.now()
-        sp_data["last_modification_datetime"] = sp_data["creation_datetime"]
-        sp_data["nods_num"] = kwargs["sp"].get_nods_number()
-        sp_data["dataset_name"] = kwargs["dataset_name"]
-        sp_data["dataset_url"] = kwargs["dataset_url"]
-        sp_data["obj_cloud_path"] = kwargs["sp"].obj_cloud_path
-        sp_data["obj_local_path"] = kwargs["sp"].obj_local_path
-        sp_data["notebook_url"] = kwargs["notebook_url"]
-
-        cloud_proc_sinap_id = noaDBmanager.insert_synapses_process(sp_data)
-        kwargs["proc_sinap_id"] = cloud_proc_sinap_id
-        print(f"New synaptic process created: {cloud_proc_sinap_id}")
-        #Update synaptic process parameters
-        kwargs["sp"].save_object_memory_address(
-            cloud_proc_sinap_id, #cloud synaptic process id
-            kwargs["spcode"], #local synaptic process id
-            kwargs["upload_folder_path"]
-        )
-        #if res["res"] != "ok"
-        #    raise Exception("Issues to insert new row in synproc table")
-
-        return kwargs
-
 class distribute_neurons_to_nods(model_onboarding_ops):
     """ Distribute neurons to corresponding NODs according to the nod info file
     """
@@ -238,10 +202,10 @@ class save_files_local_and_cloud(model_onboarding_ops):
 
     def run_operation(**kwargs):
         print("Saving in local and remote the syn proc obj and ai model")
-        kwargs["sp"].export_obj_as_json() #save the obj as json in local machine
-        kwargs["sp"].upload_obj_json_to_cloud()
-        kwargs["sp"].save_aimodel_local() # as json
-        kwargs["sp"].upload_aimodel_json_to_cloud()
+        #kwargs["sp"].export_obj_as_json() #save the obj as json in local machine
+        #kwargs["sp"].upload_obj_json_to_cloud()
+        #kwargs["sp"].save_aimodel_local() # as json
+        #kwargs["sp"].upload_aimodel_json_to_cloud()
 
         return kwargs
 
@@ -253,9 +217,10 @@ class output_msg(model_onboarding_ops):
         print("Create output message")
         kwargs["output_msg"] = {
             "proc_sinap_id": kwargs["proc_sinap_id"],
-            "aimodel_id": kwargs["aimodel_id"],
-            "res": "successful"
+            "res": "successful",
+            "fleps_eps": "" #TODO: add here corresponding list
         }
+        print(f"Output message: {kwargs['output_msg']}")
 
         return kwargs
 

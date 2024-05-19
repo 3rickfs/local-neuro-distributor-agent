@@ -212,7 +212,7 @@ class create_nod_dictionary_v2(orc_pla_ops):
                     #if noc == 1:
                     #    nda[d] = nod_nd[d][1]
                     layer = nod_nd[d][0]
-                    print(layer)
+                    #print(layer)
                     il = info_layer[layer-1]
                     print(f"fonn: {il[5]}")
                     a = nod_nd[d][1] - il[5] #zero position
@@ -260,7 +260,7 @@ class create_nod_dictionary_v2(orc_pla_ops):
                     i_n,
                     n_finn
                 )
-                print(nod_dict["nod_" + str(noc)])
+                #print(nod_dict["nod_" + str(noc)])
 
             noc += 1
             if noc >= nods_num:

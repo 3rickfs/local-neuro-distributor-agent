@@ -1,10 +1,15 @@
-import unittest
-iport time
-import requests
+import os
+import sys
+import time
 import json
+import unittest
+import requests
 
-import keras
 import numpy as np
+
+pd = os.path.abspath('..')
+sys.path.append(pd)
+from noa import crear_proceso_sinaptico
 
 #url neuro orchestrator
 no_url = "http://127.0.0.1:5000"
@@ -38,7 +43,7 @@ class synaptic_process_creations(unittest.TestCase):
             print(result)
 
             expected_res = "successful"
-            self.assertEqual(result["result"], expected_res)
+            self.assertEqual(result["res"], expected_res)
 
         except Exception as e:
             print("%"*100)

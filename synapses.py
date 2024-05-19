@@ -1,6 +1,5 @@
 import json
 
-import boto3
 from orchestration_planner import OrchPlannerOps
 from neuron_distributor import (start_distribution,
                                 start_first_layer_input_distribution
@@ -36,20 +35,6 @@ class synapses_process():
         self.aimodel_file_name = ""
         self.no_output_ep = ""
 
-    def delete_synproc_aimodel_s3_objs(self):
-        try:
-            s3_resource = boto3.resource(
-                's3',
-                region_name = self.region,
-                aws_access_key_id = self.access_key_id,
-                aws_secret_access_key = self.secret_access_key
-            )
-            s3_resource.Object(self.bucket_name, self.obj_cloud_path).delete()
-            s3_resource.Object(self.bucket_name, self.aimodel_cloud_path).delete()
-        except Exception as e:
-            raise Exception(f"Failed to delete synproc and or aimodel objs: {e}")
-
-
     def reload_synaptic_process(self, sp_data):
         print("Reloading synpatic process")
         self.fleps = sp_data["fleps"]
@@ -84,22 +69,6 @@ class synapses_process():
             self.upload_file_to_cloud(self.obj_cloud_path, self.obj_local_path)
         except Exception as e:
             raise Exception(f"Failed to upload obj to cloud: {e}")
-
-    def upload_file_to_cloud(self, cloud_file_path, local_file_path):
-        s3_resource = boto3.resource(
-            's3',
-            region_name = self.region,
-            aws_access_key_id = self.access_key_id,
-            aws_secret_access_key = self.secret_access_key
-        )
-
-        with open(local_file_path, 'rb') as of:
-            s3_resource.Bucket(self.bucket_name).put_object(
-                #Bucket = self.bucket_name,
-                Key = cloud_file_path,
-                Body = of
-            )
-        of.close()
 
     def save_aimodel_local(self):
         with open(self.aimodel_local_path, "w") as jf:

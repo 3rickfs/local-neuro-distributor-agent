@@ -1,11 +1,11 @@
 import os
 import json
-import requests
 import ctypes
 import time
+import requests
+from datetime import datetime
 
 from flask import Flask, request
-
 from orchestration_planner import (#read_endpoints,
                                    OrchPlannerOps,
                                    read_json_data
@@ -15,25 +15,11 @@ from neuron_distributor import (start_distribution,
                                 start_first_layer_input_distribution,
                                 send_order_to_nods_to_delete_sp
                                )
-from noaDBmanager import noaDBmanager
 
 app = Flask(__name__)
 syn_proc = None
-#home = os.environ.get('HOME')
-#if 'dev-1' in home:
-#    app.config['UPLOAD_FOLDER'] = '/home/dev-1/dev/edge-intelligence-' + \
-#                                  'simulator/neuro-orchestrator-agent/uploads'
-#else:
-#    app.config['UPLOAD_FOLDER'] = '/home/noa/neuro-orchestrator-agent/uploads'
 
 app.config['UPLOAD_FOLDER'] = os.getcwd() + "/uploads"
-
-#Create/override synapses processes json file to be empty
-# means no synaptic process on RAM
-empty_json = {}
-with open(app.config['UPLOAD_FOLDER'] + "/synapses_processes.json", "w") as jf:
-    json.dump(empty_json, jf)
-jf.close()
 
 def delete_sp_obj(syn_proc, synapses_process_id):
     #Delete json file
@@ -55,7 +41,15 @@ def delete_sp_obj(syn_proc, synapses_process_id):
     jf.close()
 
     #Delete register in remote db
-    noaDBmanager.delete_synproc_register(synapses_process_id)
+    #noaDBmanager.delete_synproc_register(synapses_process_id)
+
+def get_spcode():
+    spcode = str(datetime.now())
+    spcode = spcode.replace(" ", "-")
+    spcode = spcode.replace(":", "-")
+    spcode = spcode.replace("-", "")
+
+    return spcode
 
 def get_synapses_code(spid, uid):
     global syn_proc
@@ -155,6 +149,7 @@ def about():
            " - developed with love by Tekvot dev team. </p>"
 
 def send_inputs_to_1layer_nods():
+    #TODO: modify this function to send data without a syn_proc obj
     global syn_proc
 
     input_data = request.get_json()
@@ -185,43 +180,8 @@ def send_inputs_to_1layer_nods():
 
     return json.dumps(result)
 
-def set_final_output():
-    global syn_proc 
-
-    input_data = request.get_json()
-    user_id = 0 #dummy value on this case only
-    sp_c = get_synapses_code(input_data["synapses_process_id"], user_id)
-    print(f"prediction result: {input_data['inputs']}")
-    print(f"sp id: {input_data['synapses_process_id']}")
-    print(f"synaptic code: {sp_c}")
-
-    if sp_c != 0:
-        try:
-            syn_proc = ctypes.cast(
-                #int(input_data["synapses_process_id"]),
-                sp_c,
-                ctypes.py_object
-            ).value
-
-            print(f"saved start time: {syn_proc.get_pred_start_time()}")
-            syn_proc.set_synapses_output(input_data["inputs"])
-            #get end time to calculate performance
-            t = time.time()
-            syn_proc.set_pred_end_time(t)
-            #print(t)
-            #calculate prediction time
-            syn_proc.calculate_prediction_time()
-            #Saving modifications to obj
-            syn_proc.export_obj_as_json()
-            result = {"result": "ok"}
-        except:
-            result = {"result": "error"}
-    else:
-        result = {"result": "error"}
-
-    return result #"ok"
-
 def read_synapses_process_output():
+    #TODO: modify this function to send data without a syn_proc obj
     global syn_proc
 
     input_data = request.get_json()
@@ -250,22 +210,19 @@ def read_synapses_process_output():
 def crear_proceso_sinaptico(synaptic_data, nods_info):
     global syn_proc
 
-    #file_path = app.config['UPLOAD_FOLDER']
-    #js_n, ni_n = save_files(request, file_path)
-    #json_data = read_json_data(file_path, js_n)
-    #nods_info = read_json_data(file_path, ni_n)
-
-    #input_data = request.get_json()
     syn_proc = synapses_process(nods_info)
 
     synapses_process_id = id(syn_proc)
 
     # NOA endpoint for getting model output
-    neuro_orchestrator_ep = [synaptic_data["neuro_orchestrator_url"] + "/set_final_output"]
+    noa_url = synaptic_data["neuro_orchestrator_url"]
+    neuro_orchestrator_ep = [noa_url + "/set_final_output"]
 
     #Onboard the model
     data_4_onboarding = {}
-    data_4_onboarding["spcode"] = synapses_process_id
+    data_4_onboarding["spcode"] = get_spcode()
+    data_4_onboarding["neuro_orchestrator_url"] = noa_url
+    data_4_onboarding["nods_info"] = nods_info
     data_4_onboarding["noep"] = neuro_orchestrator_ep
     #data_4_onboarding["upload_folder_path"] = file_path
     data_4_onboarding["user_id"] = synaptic_data["user_id"]
@@ -283,7 +240,7 @@ def crear_proceso_sinaptico(synaptic_data, nods_info):
         res = syn_proc.onboard_model(**data_4_onboarding)
     except Exception as e:
         print(f"Error when creating synaptic process: {e}")
-        res = {"res":f"error - {e}"}
+        res = {"res": f"error - {e}"}
 
     return res
 
