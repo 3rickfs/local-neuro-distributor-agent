@@ -196,6 +196,34 @@ class distribute_neurons_to_nods(model_onboarding_ops):
 
         return kwargs
 
+class save_fleps_in_noa_sp(model_onboarding_ops):
+    """ save fleps in sp record in NOA
+    """
+
+    def run_operation(**kwargs):
+        print("Save fleps in sp record in corresponding NOA")
+        input_data = {
+            "fleps": kwargs["sp"].read_fleps(),
+            "user_id": kwargs["user_id"],
+            "username": kwargs["username"],
+            "synapses_process_id": kwargs["proc_sinap_id"]
+        }
+
+        headers = {'Content-type': 'application/json'}
+        json_data = json.dumps(input_data)
+        no_url = kwargs["neuro_orchestrator_url"]
+        print(f"no url: {no_url}")
+        result = requests.post(f"{no_url}/save_sp_fleps",
+                               data=json_data, headers=headers
+                              )
+
+        result = json.loads(result.text)
+        print(result)
+        if result["result"] != "ok":
+            raise Exception(f"Error when saving fleps: {result}")
+
+        return kwargs
+
 class save_files_local_and_cloud(model_onboarding_ops):
     """ save synproc obj and the ai model in the local machine and cloud 
     """
@@ -218,7 +246,7 @@ class output_msg(model_onboarding_ops):
         kwargs["output_msg"] = {
             "proc_sinap_id": kwargs["proc_sinap_id"],
             "res": "successful",
-            "fleps_eps": "" #TODO: add here corresponding list
+            "fleps_eps": kwargs["sp"].read_fleps()
         }
         print(f"Output message: {kwargs['output_msg']}")
 
@@ -231,5 +259,5 @@ class ModelOnboardingOps:
         for operation in model_onboarding_ops.__subclasses__():
             kwargs = operation.run_operation(**kwargs)
 
-        return kwargs["output_msg"]
+        return kwargs["output_msg"]#, kwargs["sp"].read_fleps()
 

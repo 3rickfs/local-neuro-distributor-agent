@@ -17,7 +17,7 @@ no_url = "http://127.0.0.1:5000"
 class synaptic_process_creations(unittest.TestCase):
     def test_create_synaptic_process(self):
         print("*"*100)
-        print("Test 2: Create a synaptic process")
+        print("Test 1: Create a synaptic process from a local machine")
         print("-------------------------------------------------------")
 
         input_model_file_name = "./diabetes_detection_model.json"
