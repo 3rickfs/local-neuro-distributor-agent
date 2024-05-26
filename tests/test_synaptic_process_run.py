@@ -40,7 +40,7 @@ class synaptic_process_run(unittest.TestCase):
 
         try:
 
-            synapses_process_id = 160 #114 #94
+            synapses_process_id = 163 #114 #94
             username = "test_username"
             user_id = "1"
 
