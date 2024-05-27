@@ -113,44 +113,6 @@ class get_model_components_v2(orc_pla_ops):
 
         return kwargs
 
-class get_model_components(orc_pla_ops):
-    """ Get model's weights, biases, activation funcitions, etc.
-    """
-    def run_operation(**kwargs):
-        return kwargs
-
-        json_data = kwargs["json_data"]
-        nod_ep = kwargs["nod_ep"]
-        #split parameters model:
-        neurons_per_nod = json_data["CoN_parameters"]["neurons_per_nod"]
-        nod_num = json_data["CoN_parameters"]["nod_num"]
-        info_layer = []
-        # get layers info:
-        nc = 1 #neurons counter
-        noc = 0 #nod counter
-        for l in range(1, len(json_data["layers"])+1):
-            layer_dict = json_data["layers"]["layer_" + str(l)]
-            neuron_num = len(layer_dict)
-            nods_num = get_nods_number(neuron_num, neurons_per_nod)
-            ws, bs, fas, ins, ons, eps = [], [], [], [], [], []
-            for n in range(1, neuron_num+1):
-                neuron_dict = layer_dict["neuron_" + str(nc)]
-                ws.append(neuron_dict["pesos"]["w"])
-                bs.append(neuron_dict["bias"])
-                fas.append(neuron_dict["fa"])
-                ins.append(neuron_dict["inputs_names"])
-                ons.append(neuron_dict["outputs_names"][0])
-                nc += 1
-            #list of NOD endpoints in current layer
-            eps = nod_ep[noc:noc+nods_num]
-            noc += nods_num
-
-            info_layer.append([ins, ws, bs, fas, ons, eps])
-
-        kwargs["info_layer"] = info_layer
-
-        return kwargs
-
 class map_nod_eps(orc_pla_ops):
     """ Nod's endpoints should be mapped to stablish how nods must be considered
         for communicating between themselves and executing neurons according to 
@@ -201,6 +163,7 @@ class create_nod_dictionary_v2(orc_pla_ops):
         #TODO: nda works for dmodels in which the NOD1'll be for all layers
         #nda = [0 for i in range(len(nods_tech_info["nod_1"]["neuron_dist"]))]
         while True:
+            print(f"noc: {noc}")
             ni = nods_tech_info["nod_" + str(noc)]
             nod_id = noc #for now both are the same
             nod_nd = ni["neuron_dist"]
@@ -263,7 +226,7 @@ class create_nod_dictionary_v2(orc_pla_ops):
                 #print(nod_dict["nod_" + str(noc)])
 
             noc += 1
-            if noc >= nods_num:
+            if noc > nods_num:
                 break
 
         kwargs["nod_dict"] = nod_dict

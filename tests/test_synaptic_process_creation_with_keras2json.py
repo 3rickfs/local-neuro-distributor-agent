@@ -16,18 +16,22 @@ from noa import crear_proceso_sinaptico, getJSONfromKerasModel
 no_url = "http://127.0.0.1:5000"
 
 class synaptic_process_creations(unittest.TestCase):
-    def test_create_synaptic_process(self):
+    def test_create_synaptic_process_taking_keras_model(self):
         print("*"*100)
-        print("Test 1: Create a synaptic process from a local machine")
+        print("Test 1: create synaptic process converting a keras model to json")
         print("-------------------------------------------------------")
 
-        input_model_file_name = "./diabetes_detection_model.json"
+        input_model_file_name = "./diabetes_detection_model.keras"
 
         try:
+            # open the model
+            model = tf.keras.models.load_model(input_model_file_name)
+            synaptic_data = getJSONfromKerasModel(model)
+
             #Load the AI model JSON
-            with open(input_model_file_name, 'r') as jf:
-                synaptic_data = json.load(jf)
-            jf.close()
+            #with open(input_model_file_name, 'r') as jf:
+            #    synaptic_data = json.load(jf)
+            #jf.close()
             with open("./nods_info.json", "r") as jf:
                 nods_info = json.load(jf)
             jf.close()
@@ -53,6 +57,7 @@ class synaptic_process_creations(unittest.TestCase):
 
 
         print("*"*100)
+
 
 if __name__ == '__main__':
     unittest.main()

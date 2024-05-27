@@ -55,15 +55,17 @@ def generate_nods_dis_json(nods_info,
             #print(nod)
             if nod == 0:
                 #print(l[nod])
-                nod_dist.append(l[nod])
+                nd = [j+1, l[nod][0], l[nod][1]]
+                nod_dist.append(nd) #l[nod])
             else:
                 if j < len(ndist) - 1:
                     #print(l[nod])
-                    nod_dist.append(l[nod])
+                    nd = [j+1, l[nod][0], l[nod][1]]
+                    nod_dist.append(nd) #l[nod])
 
         nndist.append(nod_dist)
 
-    nodsinfo = {} 
+    nodsinfo = {}
     for n in range(nods_num):
         nod_info = {
             "id": nods_info["nod_" + str(n+1)]["id"],
@@ -74,6 +76,8 @@ def generate_nods_dis_json(nods_info,
             "pue": nods_info["nod_" + str(n+1)]["pue"],
             "gco2pkwh": nods_info["nod_" + str(n+1)]["gco2pkwh"],
             "manufacco2": nods_info["nod_" + str(n+1)]["manufacco2"],
+            "dis_eps": nods_info["nod_" + str(n+1)]["dis_eps"],
+            "ops_eps": nods_info["nod_" + str(n+1)]["ops_eps"],
             "neuron_dist": nndist[n]
         }
 
@@ -83,19 +87,21 @@ def generate_nods_dis_json(nods_info,
     #print(nodsinfo)
 
     #save json
-    with open('./tests/nods_info_exp_1_m.json', 'w') as f:
-        json.dump(nodsinfo, f)
-    f.close()
+    #with open('./tests/nods_info_exp_1_m.json', 'w') as f:
+    #    json.dump(nodsinfo, f)
+    #f.close()
     jsonobj = json.dumps(nodsinfo, indent=4)
     print(jsonobj)
     #d = nods_num/neurons
 
-# open json
-with open("./tests/nods_info_exp_1.json", "r") as f:
-    nods_info = json.load(f)
-f.close()
+    return nodsinfo
 
-generate_nods_dis_json(nods_info, [512, 128, 10])
+if __name__ == "__main__":
+    # open json
+    with open("./tests/nods_info.json", "r") as f:
+        nods_info = json.load(f)
+    f.close()
+    ni = generate_nods_dis_json(nods_info, [512, 128, 10])
 
 
 

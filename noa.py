@@ -14,8 +14,25 @@ from neuron_distributor import (start_distribution,
                                 start_first_layer_input_distribution,
                                 send_order_to_nods_to_delete_sp
                                )
+from TF2JSONconverter.TF2JSON.TF2JSON  import ConvertTF2JSON
 
 syn_proc = None
+
+def getJSONfromKerasModel(model):
+    print("Getting JSON from Keras model")
+    kwargs = {}
+    kwargs["model"] = model
+    kwargs["model_info"] = {
+        "nombre": "Test Dense based Model 1", 
+        "model_version": "v1.0.0",
+        "owner": "Tekvot"
+    }
+    kwargs["model_file_name"] = "dense_model.json"
+
+    kwargs = ConvertTF2JSON.run(**kwargs)
+
+    print("Model JSON generated")
+    return kwargs["model_dict"]
 
 def delete_sp_obj(syn_proc, synapses_process_id):
     #Delete json file
@@ -56,8 +73,8 @@ def get_fleps(nod_info):
     for nodi in nod_info:
         cid = nod_info[nodi]["capa_ids"][0]
         if cid == 1: #first layer only
-            print(f"nod first layer endpoint: {(nod_info[nodi]['ops_ep'])}")
-            fleps.append(nod_info[nodi]["ops_ep"])
+            print(f"nod first layer endpoint: {(nod_info[nodi]['ops_eps'])}")
+            fleps.append(nod_info[nodi]["ops_eps"])
         else:
             break
 
@@ -156,4 +173,5 @@ def delete_proceso_sinaptico():
     return res
 
 if __name__ == '__main__':
-    app.run(host=host, port=int(port))
+    #app.run(host=host, port=int(port))
+    print("Hello world, I'm a NOA")

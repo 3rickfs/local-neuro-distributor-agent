@@ -11,26 +11,30 @@ import tensorflow as tf
 pd = os.path.abspath('..')
 sys.path.append(pd)
 from noa import crear_proceso_sinaptico, getJSONfromKerasModel
+from nods_info_format_generator import generate_nods_dis_json
 
 #url neuro orchestrator
 no_url = "http://127.0.0.1:5000"
 
 class synaptic_process_creations(unittest.TestCase):
-    def test_create_synaptic_process(self):
+    def test_create_synaptic_process_taking_keras_model_and_nodsinfo(self):
         print("*"*100)
-        print("Test 1: Create a synaptic process from a local machine")
+        print("Test 1: create sp with keras model to json and nods_info")
         print("-------------------------------------------------------")
 
-        input_model_file_name = "./diabetes_detection_model.json"
+        input_model_file_name = "./diabetes_detection_model.keras"
 
         try:
-            #Load the AI model JSON
-            with open(input_model_file_name, 'r') as jf:
-                synaptic_data = json.load(jf)
-            jf.close()
+            # open the model
+            model = tf.keras.models.load_model(input_model_file_name)
+            synaptic_data = getJSONfromKerasModel(model)
+
+
             with open("./nods_info.json", "r") as jf:
                 nods_info = json.load(jf)
             jf.close()
+            # set dist in nods_info
+            nods_info = generate_nods_dis_json(nods_info, [80, 100, 120, 2])
 
             #Distribute neurons
             synaptic_data["user_id"] = 1
@@ -53,6 +57,7 @@ class synaptic_process_creations(unittest.TestCase):
 
 
         print("*"*100)
+
 
 if __name__ == '__main__':
     unittest.main()
