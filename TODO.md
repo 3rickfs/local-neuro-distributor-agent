@@ -1,6 +1,6 @@
 # TODO
 - [] Run a notebook to test the set of models and analyze the performance of them.
-- [] deploy in prod the new nods.
+- [] deploy in prod the new nods. Update the nods info json.
 - [x] Load the keras model and call the converter to get the json obj.
 - [x] integrate the distribution command generator.
 - [x] the local distributor should sent the inputs too
