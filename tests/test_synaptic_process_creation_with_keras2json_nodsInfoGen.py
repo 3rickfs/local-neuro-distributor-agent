@@ -15,6 +15,7 @@ from nods_info_format_generator import generate_nods_dis_json
 
 #url neuro orchestrator
 no_url = "http://127.0.0.1:5000"
+#no_url = "a9d4da522d410433185d883825694e22-1486249831.us-west-1.elb.amazonaws.com:5000"
 
 class synaptic_process_creations(unittest.TestCase):
     def test_create_synaptic_process_taking_keras_model_and_nodsinfo(self):

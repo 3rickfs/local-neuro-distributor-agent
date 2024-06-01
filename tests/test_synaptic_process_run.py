@@ -13,7 +13,8 @@ sys.path.append(pd)
 from noa import send_inputs_to_1layer_nods, read_synapses_process_output
 
 #url neuro orchestrator
-no_url = "http://127.0.0.1:5000"
+#no_url = "http://127.0.0.1:5000"
+no_url = "http://a4edd8b5e253049c9b077d62a2f081a0-1308811481.us-west-1.elb.amazonaws.com:5000"
 
 class synaptic_process_run(unittest.TestCase):
     def test_synaptic_process_run(self):
@@ -40,7 +41,7 @@ class synaptic_process_run(unittest.TestCase):
 
         try:
 
-            synapses_process_id = 173 #114 #94
+            synapses_process_id = 180 #173 #114 #94
             username = "test_username"
             user_id = "1"
 
@@ -56,6 +57,7 @@ class synaptic_process_run(unittest.TestCase):
             }
 
             result = send_inputs_to_1layer_nods(nod_input)
+            print(f"results from sending the inputs:{result}")
             #json_data = json.dumps(nod_input)
             #headers = {'Content-type': 'application/json'}
             #result = requests.post(f"{no_url}/send_inputs_to_1layer_nods",

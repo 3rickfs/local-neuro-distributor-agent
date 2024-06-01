@@ -36,6 +36,7 @@ class create_synaptic_process(model_onboarding_ops):
             "params_num": kwargs["mj"]["model_info"]["params_num"]
             }
         }
+        ni = kwargs["nods_info"]
         json_data = {
             "user_id": kwargs["user_id"],
             "username": kwargs["username"],
@@ -43,38 +44,70 @@ class create_synaptic_process(model_onboarding_ops):
             "dataset_name": kwargs["dataset_name"],
             "dataset_url": kwargs["dataset_url"],
             "notebook_url": kwargs["notebook_url"],
-            "mj": mj
+            "nombre": mj["model_info"]["nombre"],
+            "model_version": mj["model_info"]["model_version"],
+            "neurons_num": mj["model_info"]["neurons_num"],
+            "layers_num": mj["model_info"]["layers_num"],
+            "params_num": mj["model_info"]["params_num"],
+            "nods_info": ni
+            #"mj": mj
         }
+        #json_data["nods_info"] = kwargs["nods_info"]
+        #print(f"json data: {json_data}")
+        print("-----------------------------------------------------")
 
-        with open("json_data.json", "w") as jf:
-            json.dump(json_data, jf)
-        jf.close()
-        with open("nods_info.json", "w") as jf:
-            json.dump(kwargs["nods_info"], jf)
-        jf.close()
+        #with open("json_data.json", "w") as jf:
+        #    json.dump(json_data, jf)
+        #jf.close()
+        #with open("nods_info.json", "w") as jf:
+        #    json.dump(kwargs["nods_info"], jf)
+        #jf.close()
+
         #with open("json_data.json", "rb") as jf:
         #    json_data = jf
         #jf.close()
         #with open("nods_info.json", "rb") as jf:
         #    nods_info= jf
         #jf.close()
-        json_data = open("json_data.json", "rb")
-        nods_info = open("nods_info.json", "rb")
 
-        files = {
-            'nods_info': nods_info,
-            'json_data': json_data
-        }
+        #json_data = open("json_data.json", "rb")
+        #nods_info = open("nods_info.json", "rb")
 
+        #files = {
+        #    "nods_info": nods_info,
+        #    "json_data": json_data
+        #}
+
+        #headers = {'Content-type': 'multipart/form-data'} #; charset=utf-8"}
+        headers = {'Content-type': 'application/json'}
         noa_url = kwargs["neuro_orchestrator_url"]
         url = noa_url + "/crear_no_distribution_synaptic_process"
-        result = requests.post(url, files=files)
+        print(f"URL for no distribution sp creation: {url}")
+        #result = requests.post(url, headers=headers, files=files)
+        #json_data = json.dumps(json_data) #kwargs["nods_info"]) #json_data)
+        #json_data = json.dumps({"uno":1, "dos":2})
+        #print(json_data)
+        #result = requests.post(url, data=json_data, headers=headers)
+        #result = requests.post(url, files=files)
+
+
+        #headers = {'Content-type': 'application/json'} 
+        #result = requests.get(f"{no_url}/")
+        json_data = json.dumps(json_data)
+        result = requests.post(f"{noa_url}/dummy_endpoint",
+                               data=json_data,
+                               headers=headers
+                              )
+        #result = requests.post(f"{noa_url}/dummy_endpoint",
+        #                       files=files,
+        #                       headers=headers
+        #                      )
 
         res = json.loads(result.text)
         print(res)
 
-        json_data.close()
-        nods_info.close()
+        #json_data.close()
+        #nods_info.close()
 
         if res["res"] == "successful":
             spid = res["proc_sinap_id"]
@@ -153,8 +186,7 @@ class save_nod_dis_urls(model_onboarding_ops):
     """
 
     def run_operation(**kwargs):
-        print("Saving nod distribution URLs")
-
+        print("Saving nod distribution endpoints")
         #nd_urls = [
         #    "http://" + e \
         #    for e in kwargs["nod_dict"]["dis_ep"].split("/")[2] \
@@ -259,5 +291,5 @@ class ModelOnboardingOps:
         for operation in model_onboarding_ops.__subclasses__():
             kwargs = operation.run_operation(**kwargs)
 
-        return kwargs["output_msg"]#, kwargs["sp"].read_fleps()
+        return kwargs["output_msg"] #, kwargs["sp"].read_fleps()
 
