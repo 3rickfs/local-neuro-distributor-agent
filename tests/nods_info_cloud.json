@@ -1,1 +1,28 @@
-{"nod_1": {"id": 1, "type": "rp4", "power_consumption": 5.0, "ram": 8, "arq": "ARM", "pue": 1, "gco2pkwh": 6790.0, "manufacco2": 1, "dis_eps": "http://a4a508b53330a4e09a27f2fc7a509c17-634708181.us-west-1.elb.amazonaws.com:5000/save_neurons", "ops_eps": "http://a4a508b53330a4e09a27f2fc7a509c17-634708181.us-west-1.elb.amazonaws.com:5000/send_nod_inputs", "neuron_dist": [[1, 1, 40], [2, 81, 130], [3, 181, 240], [4, 301, 302]]}, "nod_2": {"id": 2, "type": "rp4", "power_consumption": 5.0, "ram": 8, "arq": "ARM", "pue": 1, "gco2pkwh": 6790.0, "manufacco2": 1, "dis_eps": "http://ab8c52ba7ac5f47a28a9635ff4876bc2-1933594008.us-west-1.elb.amazonaws.com:5000/save_neurons", "ops_eps": "http://ab8c52ba7ac5f47a28a9635ff4876bc2-1933594008.us-west-1.elb.amazonaws.com:5000/send_nod_inputs", "neuron_dist": [[1, 41, 80], [2, 131, 180], [3, 241, 300]]}}
+{
+	"nod_1":{
+		"id": 1,
+		"type": "rp4",
+		"power_consumption": 5.0,
+		"ram": 8,
+		"arq": "ARM",
+		"pue": 1,
+		"gco2pkwh": 6790.0,
+		"manufacco2": 1,
+		"dis_eps": "http://a25137983fe734516b37ff7d8de3dbe7-1745037980.us-west-1.elb.amazonaws.com:5000/save_neurons",
+		"ops_eps": "http://a25137983fe734516b37ff7d8de3dbe7-1745037980.us-west-1.elb.amazonaws.com:5000/send_nod_inputs",
+		"neuron_dist": [[1,1,40], [2,81,130], [3,181,240], [4,301,302]]
+	},
+	"nod_2":{
+		"id": 2,
+		"type": "rp4",
+		"power_consumption": 5.0,
+		"ram": 8,
+		"arq": "ARM",
+		"pue": 1,
+		"gco2pkwh": 6790.0,
+		"manufacco2": 1,
+		"dis_eps": "http://af67ff635def944aeaa27f00b1c949b1-714599962.us-west-1.elb.amazonaws.com:5000/save_neurons",
+		"ops_eps": "http://af67ff635def944aeaa27f00b1c949b1-714599962.us-west-1.elb.amazonaws.com:5000/send_nod_inputs",
+		"neuron_dist": [[1,41,80], [2,131,180], [3,241,300]]
+	}
+}
