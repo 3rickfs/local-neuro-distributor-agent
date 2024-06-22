@@ -1,28 +1,22 @@
 import requests
 import json
 
-def send_order_to_nods_to_delete_sp(sp):
-    """ Removing all synaptic process info on nods
+def send_request_to_noa_to_delete_sp(jd):
+    """ Noa will sent request to remove all synaptic process info on nods
     """
 
-    nod_res = []
-    spid = sp.synapses_process_id
-    eps = [e + "/remove_sp_nod_info" for e in sp.nd_urls]
-    for e in eps:
-        data = {}
-        data["synapses_process_id"] = spid
-        json_data = json.dumps(data)
-        headers = {'Content-type': 'application/json'}
-        print(f"Sending to: {e}")
-        result = requests.post(e,
-                               data=json_data,
-                               headers=headers
-                              )
-        print(f"result: {result.text}")
-        nod_res.append(result.text)
+    spid = jd["synapses_process_id"]
+    no_ep = jd["no_url"] + "/delete_proceso_sinaptico"
+    json_data = json.dumps(jd)
+    headers = {'Content-type': 'application/json'}
+    print(f"Sending to: {no_ep}")
+    result = requests.post(no_ep,
+                           data=json_data,
+                           headers=headers
+                          )
+    print(f"result: {result.text}")
 
-    return nod_res
-
+    return result
 
 def start_distribution(nod_dict, synapses_process_id, mfname):
     """ Start distributing neurons to every NOD according

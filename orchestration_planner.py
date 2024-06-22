@@ -150,7 +150,7 @@ class map_nod_eps(orc_pla_ops):
 class create_nod_dictionary_v2(orc_pla_ops):
     """ Distribution of neurons in different layers for each nod
     """
-    
+
     def run_operation(**kwargs):
         print("Creating nod dictionary")
         info_layer = kwargs["info_layer"]
@@ -199,7 +199,7 @@ class create_nod_dictionary_v2(orc_pla_ops):
                 nod_eps = []
                 ndl = len(nod_ep_map)
                 #for d in range(distributions):
-                for nn in range(1, len(nod_ep_map)+1):
+                for nn in range(1, ndl):
                     layer_eps = nod_ep_map["layer_" + str(nn)]
                     for ne in layer_eps:
                         if nod_id == ne[0]:

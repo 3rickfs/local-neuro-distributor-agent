@@ -12,7 +12,7 @@ from orchestration_planner import (#read_endpoints,
 from synapses import synapses_process
 from neuron_distributor import (start_distribution,
                                 start_first_layer_input_distribution,
-                                send_order_to_nods_to_delete_sp
+                                send_request_to_noa_to_delete_sp
                                )
 from TF2JSONconverter.TF2JSON.TF2JSON  import ConvertTF2JSON
 
@@ -152,23 +152,14 @@ def crear_proceso_sinaptico(synaptic_data, nods_info):
 
     return res
 
-def delete_proceso_sinaptico():
-    json_data = request.get_json()
-    synapses_process_id = json_data["synapses_process_id"]
-    syn_proc = ctypes.cast(
-        int(synapses_process_id),
-        ctypes.py_object
-    ).value
-
+def delete_proceso_sinaptico(json_data):
     try:
-        print("Veriying user availability")
-        send_order_to_nods_to_delete_sp(syn_proc)
-        delete_sp_obj(syn_proc, synapses_process_id)
-        res = {"result": "ok"}
+        res = send_request_to_noa_to_delete_sp(json_data)
+        #res = {"result": "ok"}
 
     except Exception as e:
         print(f"Error deleting synaptic process obj: {e}")
-        res = {"result": "Error: {e}"}
+        res = {"result": f"Error: {e}"}
 
     return res
 
