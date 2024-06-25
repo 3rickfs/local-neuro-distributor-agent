@@ -75,6 +75,7 @@ class create_synaptic_process(model_onboarding_ops):
 
         #res = json.loads(result.text)
         res["proc_sinap_id"] = 0
+        res["res"] = "successful"
         print(res)
 
         #json_data.close()
