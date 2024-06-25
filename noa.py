@@ -27,6 +27,7 @@ def getJSONfromKerasModel(model):
         "model_version": "v1.0.0",
         "owner": "Tekvot"
     }
+    kwargs["save_model_json"] = False
     kwargs["model_file_name"] = "dense_model.json"
 
     kwargs = ConvertTF2JSON.run(**kwargs)
@@ -151,6 +152,42 @@ def crear_proceso_sinaptico(synaptic_data, nods_info):
         res = {"res": f"error - {e}"}
 
     return res
+
+def crear_proceso_sinaptico_local(synaptic_data, nods_info):
+    global syn_proc
+
+    syn_proc = synapses_process(nods_info)
+
+    # NOA endpoint for getting model output
+    noa_url = synaptic_data["neuro_orchestrator_url"]
+    neuro_orchestrator_ep = [noa_url + "/set_final_output"]
+
+    #Onboard the model
+    data_4_onboarding = {}
+    data_4_onboarding["spcode"] = get_spcode()
+    data_4_onboarding["neuro_orchestrator_url"] = noa_url
+    data_4_onboarding["nods_info"] = nods_info
+    data_4_onboarding["noep"] = neuro_orchestrator_ep
+    #data_4_onboarding["upload_folder_path"] = file_path
+    data_4_onboarding["user_id"] = synaptic_data["user_id"]
+    data_4_onboarding["username"] = synaptic_data["username"]
+    data_4_onboarding["mj"] = synaptic_data #here comes the model.json too
+    data_4_onboarding["sc_fpath"] = "synaptic_process_objs"
+    data_4_onboarding["dataset_name"] = synaptic_data["dataset_name"]
+    data_4_onboarding["dataset_url"] = synaptic_data["dataset_url"]
+    data_4_onboarding["notebook_url"] = synaptic_data["notebook_url"]
+    #data for the model
+    data_4_onboarding["mfpc"] = "models"
+    data_4_onboarding["model_bucket_name"] = "greenbrain"
+
+    try:
+        res = syn_proc.local_onboard_model(**data_4_onboarding)
+    except Exception as e:
+        print(f"Error when creating synaptic process: {e}")
+        res = {"res": f"error - {e}"}
+
+    return res
+
 
 def delete_proceso_sinaptico(json_data):
     try:

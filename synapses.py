@@ -5,6 +5,7 @@ from neuron_distributor import (start_distribution,
                                 start_first_layer_input_distribution
                                )
 from ModelOnboarder import ModelOnboardingOps
+from LocalModelOnboarder import LocalModelOnboardingOps
 
 class synapses_process():
     def __init__(self, nods_tech_info={}):
@@ -132,6 +133,12 @@ class synapses_process():
     def onboard_model(self, **kwargs):
         kwargs["sp"] = self
         res = ModelOnboardingOps.run(**kwargs)
+
+        return res
+
+    def local_onboard_model(self, **kwargs):
+        kwargs["sp"] = self
+        res = LocalModelOnboardingOps.run(**kwargs)
 
         return res
 
